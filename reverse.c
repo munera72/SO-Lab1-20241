@@ -4,6 +4,7 @@
 
 //void control(int argc, char *argv[]);
 int readfile(char *filename);
+int writefile(char *filename, char *content);
 
 int main(int argc, char *arcv[]){
     printf("This is the amount of arguments %d\n", argc);
@@ -26,11 +27,24 @@ int readfile(char *filename){
     
     while ((read = getline(&line, &len, fp)) != -1) {
         printf("%s", line);
+        writefile("output.txt", line);
     }
 
     fclose(fp);
     if (line) {
         free(line);
     }
+    return 0;
+}
+
+int writefile(char *filename, char *content){
+    FILE *fp = fopen(filename, "a");
+    if (fp == NULL) {
+        fprintf(stderr, "Error opening file for writing");
+        return 1;
+    }
+    fprintf(fp, "%s\n", content);
+
+    fclose(fp);
     return 0;
 }
