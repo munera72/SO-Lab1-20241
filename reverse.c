@@ -2,49 +2,99 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+
 //void control(int argc, char *argv[]);
-int readfile(char *filename);
-int writefile(char *filename, char *content);
+int control(int argc, char *argv[]);
+int readfile(char *filename, char **contentArray, int lineCount);
+int writefile(char *filename, char **content, int lineCount);
+int countLines(char *filename);
+
 
 int main(int argc, char *arcv[]){
     printf("This is the amount of arguments %d\n", argc);
     printf("The arguments are as follows:\n");
-    for (int i = 0; i < argc; i++) {
-        printf("Argument %d: %s\n", i, arcv[i]);
-    }
+    
+    // char *content = malloc(100 * sizeof(char));
+    // for (int i = 0; i < argc; i++) {
+    //     printf("Argument %d: %s\n", i, arcv[i]);
+    // }
 
     // control(argc, arcv);
 
-    return readfile(arcv[1]);
+    
+    return control(argc, arcv);
 }
 
 
-int readfile(char *filename){
+int control(int argc, char *argv[]){
+    
+    int lineCount = countLines(argv[1]);
+    char **contentArray = malloc(lineCount * sizeof(char*));
+
+    switch (argc)
+    {
+    case 2:
+        printf("Reading file %s\n", argv[1]);
+        readfile(argv[1], contentArray, lineCount);
+        printf("The file has been read\n");
+        writefile("output.txt", contentArray, lineCount);
+        break;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+
+int readfile(char *filename, char **contentArray, int lineCount){
+    printf("The file %s has %d lines\n", filename, lineCount);
     FILE *fp = fopen(filename, "r");
     char *line = NULL;
     size_t len = 0;
-    ssize_t read;
+    // ssize_t read;
     
-    while ((read = getline(&line, &len, fp)) != -1) {
-        printf("%s", line);
-        writefile("output.txt", line);
+    for (int i = 0; i < lineCount; i++) {
+        contentArray[i] = malloc((len + 1) * sizeof(char));
+        getline(&line, &len, fp);
+        // if (read == -1) {
+        //     break; // Break if there are no more lines to read
+        // }
+        sprintf(contentArray[i], "%s", line);
     }
 
     fclose(fp);
+
     if (line) {
         free(line);
     }
     return 0;
 }
 
-int writefile(char *filename, char *content){
-    FILE *fp = fopen(filename, "a");
+int writefile(char *filename, char **content, int lineCount){
+    FILE *fp = fopen(filename, "a+");
     if (fp == NULL) {
         fprintf(stderr, "Error opening file for writing");
         return 1;
     }
-    fprintf(fp, "%s\n", content);
+    for (int i = lineCount - 1; i >= 0; i--) {
+        fprintf(fp, "%s\n", content[i]);
+    }
 
     fclose(fp);
     return 0;
+}
+
+
+int countLines(char *filename) {
+    FILE *fileContent = fopen(filename, "r");
+    int count = 0;
+    char c;
+
+    for (c = getc(fileContent); c != EOF; c = getc(fileContent)){
+        if (c == '\n'){
+            count = count + 1;
+        }
+    }
+    return count;
 }
