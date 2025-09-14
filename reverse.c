@@ -52,14 +52,11 @@ int readfile(char *filename, char **contentArray, int lineCount){
     FILE *fp = fopen(filename, "r");
     char *line = NULL;
     size_t len = 0;
-    //ssize_t read;
+
     
     for (int i = 0; i < lineCount; i++) {
         contentArray[i] = malloc((len) * sizeof(char));
         getline(&line, &len, fp);
-        // if (read == -1) {
-        //     break; // Break if there are no more lines to read
-        // }
         sprintf(contentArray[i], "%s", line);
     }
 
@@ -72,7 +69,7 @@ int readfile(char *filename, char **contentArray, int lineCount){
 }
 
 int writefile(char *filename, char **content, int lineCount){
-    FILE *fp = fopen(filename, "a+");
+    FILE *fp = fopen(filename, "w+");
     if (fp == NULL) {
         fprintf(stderr, "Error opening file for writing");
         return 1;
