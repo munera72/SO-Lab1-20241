@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int control(int argc, char *argv[]);
 int readfile(char *filename, char **contentArray, int lineCount, int maxLineLength);
@@ -29,6 +30,10 @@ int control(int argc, char *argv[]){
     switch (argc)
     {
     case 3:
+        if (strcmp(argv[1], argv[2]) == 0) {
+        fprintf(stderr, "El archivo de entrada y salida deben diferir\n");
+        exit(1);
+        }
         readfile(argv[1], contentArray, lineCount, maxLineLength);
         writefile(argv[2], contentArray, lineCount);
         break;
@@ -49,6 +54,11 @@ int control(int argc, char *argv[]){
 
 int readfile(char *filename, char **contentArray, int lineCount, int maxLineLength){
     FILE *fp = fopen(filename, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "error: cannot open file '%s'\n", filename);
+        exit(1);
+    }
+
     char *line = NULL;
     size_t len = 0;
     size_t read;
@@ -78,6 +88,11 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
 
 int writefile(char *filename, char **content, int lineCount){
     FILE *fp = fopen(filename, "w+");
+    if (fp == NULL) {
+        fprintf(stderr, "error: cannot open file '%s'\n", filename);
+        exit(1);
+    }
+
     if (fp == NULL) {
         fprintf(stderr, "Error opening file for writing");
         return 1;
@@ -118,6 +133,10 @@ int readConsoleAndReverseInput(char **contentArray, int *lineCount){
 
 int countlines(char *filename, int *maxLineLength) {
     FILE *fileContent = fopen(filename, "r");
+        if (fileContent == NULL) {
+        fprintf(stderr, "error: cannot open file '%s'\n", filename);
+        exit(1);
+    }
     int count = 0;
     char *line = NULL;
     size_t len = 0;
