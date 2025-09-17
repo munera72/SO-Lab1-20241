@@ -6,21 +6,12 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
 int writefile(char *filename, char **content, int lineCount);
 int countlines(char *filename, int *maxLineLength);
 int printContentReversed(char **content, int lineCount);
-int readAndPrintConsole();
+int readConsoleAndReverseInput(char **contentArray, int *lineCount);
 
 
-int main(int argc, char *arcv[]){
-    // printf("This is the amount of arguments %d\n", argc);
-    // printf("The arguments are as follows:\n");
-    
-    // for (int i = 0; i < argc; i++) {
-    //     printf("Argument %d: %s\n", i, arcv[i]);
-    // }
-
-    
+int main(int argc, char *arcv[]){   
     return control(argc, arcv);
 }
-
 
 int control(int argc, char *argv[]){
 
@@ -33,30 +24,25 @@ int control(int argc, char *argv[]){
         maxLineLength = 0;
         lineCount = countlines(argv[1], &maxLineLength);
         contentArray = malloc(lineCount * sizeof(char*));
-        printf("entered in if\n");
     }
 
     switch (argc)
     {
     case 3:
-        // printf("Reading file %s\n", argv[1]);
         readfile(argv[1], contentArray, lineCount, maxLineLength);
-        // printf("The file has been read\n");
         writefile(argv[2], contentArray, lineCount);
         break;
     case 2:
-        // printf("Reading file %s\n", argv[1]);
         readfile(argv[1], contentArray, lineCount, maxLineLength);
-        // printf("The file has been read\n");
         printContentReversed(contentArray, lineCount);
         break;
     case 1:
-        readAndPrintConsole();
+        readConsoleAndReverseInput(contentArray, &lineCount);
         break;
     default:
         break;
     }
-
+    free(contentArray);
 
     return 0;
 }
@@ -67,10 +53,7 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
     size_t len = 0;
     size_t read;
 
-    printf("starting to read file)\n");
-  
     for (int i = 0; i < lineCount; i++) {
-        // printf("Loop %d\n", i);
         contentArray[i] = malloc((len + 1) * sizeof(char) * maxLineLength);
         read = getline(&line, &len, fp);
 
@@ -84,12 +67,7 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
         sprintf(contentArray[i], "%s", line);
     }
 
-    printf("Finished reading file\n");
-
     fclose(fp);
-
-    printf("Closed file\n");
-
 
     if (line) {
         free(line);
@@ -119,21 +97,21 @@ int printContentReversed(char **content, int lineCount){
     return 0;
 }
 
-int readAndPrintConsole(){
-    char * line;
-    int amount;
-    printf("Enter the amount of lines: ");
-    scanf("%d", &amount);
-    char **array = malloc(amount * sizeof(char *));
-    for (int i = amount ; i >=0; i--){
+int readConsoleAndReverseInput(char **contentArray, int *lineCount){
+    char *line;
+    printf("¿Cuántas líneas desea ingresar?: ");
+    scanf("%d", lineCount);
+    contentArray = malloc(*lineCount * sizeof(char *));
+    
+    for (int i = *lineCount ; i >=0; i--){
         size_t len = 0;
-        array[i] = malloc(sizeof(char*));
+        contentArray[i] = malloc(sizeof(char*));
         getline(&line, &len, stdin);
-        sprintf(array[i], "%s", line);
+        sprintf(contentArray[i], "%s", line);
     }
-    printf("Inversed Lines: \n");
-     for (int i = 0; i < amount; i++) {
-    printf("%s", array[i]);}
+    printf("\nEl contenido ingresado invertido es: \n");
+     for (int i = 0; i < *lineCount; i++) {
+    fprintf(stdout, contentArray[i]);}
 
     return 0;
 }
@@ -150,6 +128,10 @@ int countlines(char *filename, int *maxLineLength) {
             *maxLineLength = read;
         }
         count++;
+    }
+
+    if (line) {
+        free(line);
     }
 
     fclose(fileContent);
