@@ -16,6 +16,11 @@ int main(int argc, char *arcv[]){
 
 int control(int argc, char *argv[]){
 
+    if (argc > 3) {
+        fprintf(stderr, "usage: reverse <input> <output>\n");
+        exit(1);
+    }
+
     char **contentArray;
     int lineCount = 0;
     int maxLineLength = 0;
@@ -25,6 +30,10 @@ int control(int argc, char *argv[]){
         maxLineLength = 0;
         lineCount = countlines(argv[1], &maxLineLength);
         contentArray = malloc(lineCount * sizeof(char*));
+        if (contentArray == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
     }
 
     switch (argc)
@@ -65,6 +74,10 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
 
     for (int i = 0; i < lineCount; i++) {
         contentArray[i] = malloc((len + 1) * sizeof(char) * maxLineLength);
+        if (contentArray[i] == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
         read = getline(&line, &len, fp);
 
         if (line[read-1] != '\n')
@@ -93,12 +106,9 @@ int writefile(char *filename, char **content, int lineCount){
         exit(1);
     }
 
-    if (fp == NULL) {
-        fprintf(stderr, "Error opening file for writing");
-        return 1;
-    }
     for (int i = lineCount - 1; i >= 0; i--) {
         fprintf(fp, "%s", content[i]);
+        free(content[i]);
     }
 
     fclose(fp);
@@ -117,11 +127,21 @@ int readConsoleAndReverseInput(char **contentArray, int *lineCount){
     printf("¿Cuántas líneas desea ingresar?: ");
     scanf("%d", lineCount);
     contentArray = malloc(*lineCount * sizeof(char *));
-    
+    if (contentArray == NULL) {
+        fprintf(stderr, "malloc failed\n");
+        exit(1);
+    }
+    printf("Ingrese las líneas de texto:\n");
+
     for (int i = *lineCount ; i >=0; i--){
         size_t len = 0;
-        contentArray[i] = malloc(sizeof(char*));
-        getline(&line, &len, stdin);
+        size_t read;
+        read = getline(&line, &len, stdin);
+        contentArray[i] = malloc((read + 1)*sizeof(char*));
+        if (contentArray[i] == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
         sprintf(contentArray[i], "%s", line);
     }
     printf("\nEl contenido ingresado invertido es: \n");
