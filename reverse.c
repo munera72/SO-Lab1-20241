@@ -26,7 +26,7 @@ void control(int argc, char *argv[]){
     char **contentArray;
     int lineCount = 0;
 
-    if (argc > 1 && argc < 4)
+    if (argc == 2 || argc == 3)
     {
         lineCount = countlines(argv[1]);
         contentArray = malloc(lineCount * sizeof(char*));
