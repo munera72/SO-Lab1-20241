@@ -2,20 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-int control(int argc, char *argv[]);
-int readfile(char *filename, char **contentArray, int lineCount);
+void control(int argc, char *argv[]);
+void readfile(char *filename, char **contentArray, int lineCount);
 void readfilefrompointer(FILE *fp, char **contentArray, int lineCount);
-int writefile(char *filename, char **content, int lineCount);
+void writefile(char *filename, char **content, int lineCount);
 int countlines(char *filename);
-int printContentReversed(char **content, int lineCount);
+void printContentReversed(char **content, int lineCount);
 FILE *readConsoleAndCreateTempFile(int *lineCount);
 
 
 int main(int argc, char *arcv[]){   
-    return control(argc, arcv);
+    control(argc, arcv);
+    return 0;
 }
 
-int control(int argc, char *argv[]){
+void control(int argc, char *argv[]){
 
     if (argc > 3) {
         fprintf(stderr, "usage: reverse <input> <output>\n");
@@ -52,15 +53,12 @@ int control(int argc, char *argv[]){
     case 1:
         FILE *tempFile = NULL;
         tempFile = readConsoleAndCreateTempFile(&lineCount);
-        printf("Número de líneas leídas: %d\n", lineCount);
         contentArray = malloc(lineCount * sizeof(char*));
         if (contentArray == NULL) {
             fprintf(stderr, "malloc failed\n");
             exit(1);
         }
-        printf("Empezando a leer el archivo temporal...\n");
         readfilefrompointer(tempFile, contentArray, lineCount);
-        printf("Empezando a leer el contenido \n");
         printContentReversed(contentArray, lineCount);
         fclose(tempFile);
         break;
@@ -68,8 +66,7 @@ int control(int argc, char *argv[]){
         break;
     }
     free(contentArray);
-
-    return 0;
+    return;
 }
 
 void readfilefrompointer(FILE *fp, char **contentArray, int lineCount){
@@ -84,7 +81,6 @@ void readfilefrompointer(FILE *fp, char **contentArray, int lineCount){
     size_t len = 0;
     size_t read;
 
-    fprintf(stdout, "Leyendo archivo temporal...\n");
     for (int i = 0; i < lineCount; i++) {
         read = getline(&line, &len, fp);
         if (line[read-1] != '\n')
@@ -106,9 +102,11 @@ void readfilefrompointer(FILE *fp, char **contentArray, int lineCount){
     if (line) {
         free(line);
     }
+
+    return;
 }
 
-int readfile(char *filename, char **contentArray, int lineCount){
+void readfile(char *filename, char **contentArray, int lineCount){
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         fprintf(stderr, "error: cannot open file '%s'\n", filename);
@@ -144,10 +142,10 @@ int readfile(char *filename, char **contentArray, int lineCount){
         free(line);
     }
     
-    return 0;
+    return;
 }
 
-int writefile(char *filename, char **content, int lineCount){
+void writefile(char *filename, char **content, int lineCount){
     FILE *fp = fopen(filename, "w+");
     if (fp == NULL) {
         fprintf(stderr, "error: cannot open file '%s'\n", filename);
@@ -160,14 +158,15 @@ int writefile(char *filename, char **content, int lineCount){
     }
 
     fclose(fp);
-    return 0;
+    return;
 }
 
-int printContentReversed(char **content, int lineCount){
+void printContentReversed(char **content, int lineCount){
+    printf("\nContenido en orden inverso:\n");
     for (int i = 0; i < lineCount; i++) {
         printf("%s", content[lineCount - 1 - i]);
     }
-    return 0;
+    return;
 }
 
 FILE *readConsoleAndCreateTempFile(int *lineCount){ 

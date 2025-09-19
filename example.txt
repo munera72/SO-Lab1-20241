@@ -1,6 +1,9 @@
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vel leo metus. Donec aliquet ex purus, ut aliquam libero pellentesque sed. Phasellus pulvinar sem nec mauris consectetur, e
 ssdf
-f
+f    if (argc > 3) {
+        fprintf(stderr, "usage: reverse <input> <output>\n");
+        exit(1);
+    }
 dolor
 sed
 
