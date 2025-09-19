@@ -40,8 +40,8 @@ void control(int argc, char *argv[]){
     {
     case 3:
         if (strcmp(argv[1], argv[2]) == 0) {
-        fprintf(stderr, "El archivo de entrada y salida deben diferir\n");
-        exit(1);
+            fprintf(stderr, "El archivo de entrada y salida deben diferir\n");
+            exit(1);
         }
         readfile(argv[1], contentArray, lineCount);
         writefile(argv[2], contentArray, lineCount);
@@ -163,8 +163,8 @@ void writefile(char *filename, char **content, int lineCount){
 
 void printContentReversed(char **content, int lineCount){
     printf("\nContenido en orden inverso:\n");
-    for (int i = 0; i < lineCount; i++) {
-        printf("%s", content[lineCount - 1 - i]);
+    for (int i = lineCount-1; i >= 0; i--) {
+        printf("%s", content[i]);
     }
     return;
 }
