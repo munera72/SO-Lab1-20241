@@ -3,11 +3,12 @@
 #include <string.h>
 
 int control(int argc, char *argv[]);
-int readfile(char *filename, char **contentArray, int lineCount, int maxLineLength);
+int readfile(char *filename, char **contentArray, int lineCount);
+void readfilefrompointer(FILE *fp, char **contentArray, int lineCount);
 int writefile(char *filename, char **content, int lineCount);
-int countlines(char *filename, int *maxLineLength);
+int countlines(char *filename);
 int printContentReversed(char **content, int lineCount);
-int readConsoleAndReverseInput(char **contentArray, int *lineCount);
+FILE *readConsoleAndCreateTempFile(int *lineCount);
 
 
 int main(int argc, char *arcv[]){   
@@ -23,12 +24,10 @@ int control(int argc, char *argv[]){
 
     char **contentArray;
     int lineCount = 0;
-    int maxLineLength = 0;
 
     if (argc > 1 && argc < 4)
     {
-        maxLineLength = 0;
-        lineCount = countlines(argv[1], &maxLineLength);
+        lineCount = countlines(argv[1]);
         contentArray = malloc(lineCount * sizeof(char*));
         if (contentArray == NULL) {
             fprintf(stderr, "malloc failed\n");
@@ -43,15 +42,27 @@ int control(int argc, char *argv[]){
         fprintf(stderr, "El archivo de entrada y salida deben diferir\n");
         exit(1);
         }
-        readfile(argv[1], contentArray, lineCount, maxLineLength);
+        readfile(argv[1], contentArray, lineCount);
         writefile(argv[2], contentArray, lineCount);
         break;
     case 2:
-        readfile(argv[1], contentArray, lineCount, maxLineLength);
+        readfile(argv[1], contentArray, lineCount);
         printContentReversed(contentArray, lineCount);
         break;
     case 1:
-        readConsoleAndReverseInput(contentArray, &lineCount);
+        FILE *tempFile = NULL;
+        tempFile = readConsoleAndCreateTempFile(&lineCount);
+        printf("Número de líneas leídas: %d\n", lineCount);
+        contentArray = malloc(lineCount * sizeof(char*));
+        if (contentArray == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
+        printf("Empezando a leer el archivo temporal...\n");
+        readfilefrompointer(tempFile, contentArray, lineCount);
+        printf("Empezando a leer el contenido \n");
+        printContentReversed(contentArray, lineCount);
+        fclose(tempFile);
         break;
     default:
         break;
@@ -61,7 +72,43 @@ int control(int argc, char *argv[]){
     return 0;
 }
 
-int readfile(char *filename, char **contentArray, int lineCount, int maxLineLength){
+void readfilefrompointer(FILE *fp, char **contentArray, int lineCount){
+    if (fp == NULL)
+    {
+        fprintf(stderr, "error: file pointer is NULL\n");
+        exit(1);
+    }
+    
+
+    char *line = NULL;
+    size_t len = 0;
+    size_t read;
+
+    fprintf(stdout, "Leyendo archivo temporal...\n");
+    for (int i = 0; i < lineCount; i++) {
+        read = getline(&line, &len, fp);
+        if (line[read-1] != '\n')
+        {
+            line[read] = '\n';
+            line[read+1] = '\0';
+            read += 1;
+        }
+
+        contentArray[i] = malloc((len + 1) * sizeof(char) * read);
+        if (contentArray[i] == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
+        
+        sprintf(contentArray[i], "%s", line);
+    }
+
+    if (line) {
+        free(line);
+    }
+}
+
+int readfile(char *filename, char **contentArray, int lineCount){
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         fprintf(stderr, "error: cannot open file '%s'\n", filename);
@@ -73,11 +120,6 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
     size_t read;
 
     for (int i = 0; i < lineCount; i++) {
-        contentArray[i] = malloc((len + 1) * sizeof(char) * maxLineLength);
-        if (contentArray[i] == NULL) {
-            fprintf(stderr, "malloc failed\n");
-            exit(1);
-        }
         read = getline(&line, &len, fp);
 
         if (line[read-1] != '\n')
@@ -85,6 +127,12 @@ int readfile(char *filename, char **contentArray, int lineCount, int maxLineLeng
             line[read] = '\n';
             line[read+1] = '\0';
             read += 1;
+        }
+
+        contentArray[i] = malloc((len + 1) * sizeof(char) * read);
+        if (contentArray[i] == NULL) {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
         }
         
         sprintf(contentArray[i], "%s", line);
@@ -122,36 +170,32 @@ int printContentReversed(char **content, int lineCount){
     return 0;
 }
 
-int readConsoleAndReverseInput(char **contentArray, int *lineCount){
-    char *line;
-    printf("¿Cuántas líneas desea ingresar?: ");
-    scanf("%d", lineCount);
-    contentArray = malloc(*lineCount * sizeof(char *));
-    if (contentArray == NULL) {
-        fprintf(stderr, "malloc failed\n");
+FILE *readConsoleAndCreateTempFile(int *lineCount){ 
+    char *line = NULL;
+    size_t len = 0;
+    size_t read;
+
+    FILE *tempfile = tmpfile();
+    if (tempfile == NULL) {
+        fprintf(stderr, "error: cannot create temporary file\n");
         exit(1);
     }
-    printf("Ingrese las líneas de texto:\n");
 
-    for (int i = *lineCount ; i >=0; i--){
-        size_t len = 0;
-        size_t read;
-        read = getline(&line, &len, stdin);
-        contentArray[i] = malloc((read + 1)*sizeof(char*));
-        if (contentArray[i] == NULL) {
-            fprintf(stderr, "malloc failed\n");
-            exit(1);
-        }
-        sprintf(contentArray[i], "%s", line);
+    printf("Ingrese las líneas de texto (Ctrl+D para finalizar):\n");
+
+    while ((read = getline(&line, &len, stdin)) != -1) {
+        fputs(line, tempfile);
+        *lineCount = *lineCount + 1;
     }
-    printf("\nEl contenido ingresado invertido es: \n");
-     for (int i = 0; i < *lineCount; i++) {
-    fprintf(stdout, contentArray[i]);}
 
-    return 0;
+    free(line);
+
+    rewind(tempfile);
+
+    return tempfile;
 }
 
-int countlines(char *filename, int *maxLineLength) {
+int countlines(char *filename) {
     FILE *fileContent = fopen(filename, "r");
         if (fileContent == NULL) {
         fprintf(stderr, "error: cannot open file '%s'\n", filename);
@@ -163,9 +207,6 @@ int countlines(char *filename, int *maxLineLength) {
     size_t read;
 
     while ((read = getline(&line, &len, fileContent)) != -1) {
-        if (read > *maxLineLength) {
-            *maxLineLength = read;
-        }
         count++;
     }
 
