@@ -1,29 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void writeIntoFile(const char *buffer, long file_size, FILE *out) {
-    // Si no llega archivo, usar stdout
-    FILE *dest = (out == NULL) ? stdout : out;
-
-    long end = file_size;  // fin de la última línea
-    
-    for (long i = file_size - 1; i >= 0; i--) {
-        if (buffer[i] == '\n') {
-            // imprimir desde el caracter después de '\n' hasta 'end'
-            fwrite(&buffer[i + 1], 1, end - i - 1, dest);
-            fputs("\n", dest);
-            end = i; // actualizar el final al salto de línea actual
-        }
-    }
-
-    // imprimir la primera línea (que no tiene salto antes)
-    fwrite(buffer, 1, end, dest);
-}
-
 char* openFile(const char *filename, long *file_size, FILE **fileText) {
     char *buffer; 
 
-    *fileText = fopen(filename, "r");   // abrir archivo
+    // abrir archivo
+    *fileText = fopen(filename, "r");
     if (*fileText == NULL) {
         fprintf(stderr, "error: cannot open file '%s'\n", filename);
         exit(1);
@@ -51,29 +33,61 @@ char* openFile(const char *filename, long *file_size, FILE **fileText) {
     return buffer;
 }
 
-char* readAllFromStdin(long *size) {
-    char *buffer = NULL;
-    long capacity = 0;
-    long length = 0;
-    int c;
+void writeIntoFile(const char *buffer, long file_size, FILE *out) {
+    // usar stdout si no espececifica archivo de salida
+    FILE *dest = (out == NULL) ? stdout : out;
 
-    while ((c = getchar()) != EOF) {
-        if (length >= capacity) {
-            capacity = capacity ? capacity * 2 : 1024; // crecer dinámicamente
-            char *tmp = realloc(buffer, capacity);
-            if (!tmp) {
-                free(buffer);
-                fprintf(stderr, "malloc failed\n");
-                exit(1);
-            }
-            buffer = tmp;
+    long end = file_size;
+    
+    for (long i = file_size - 1; i >= 0; i--) {
+        if (buffer[i] == '\n') {
+            // imprimir desde el caracter después de '\n' hasta 'end'
+            fwrite(&buffer[i + 1], 1, end - i - 1, dest);
+            fputs("\n", dest);
+            end = i; // actualizar el final al salto de línea actual
         }
-        buffer[length++] = (char)c;
+    }
+    // imprimo la primera linea que no tiene '\n' antes
+    fwrite(buffer, 1, end, dest);
+}
+
+char* readAllFromStdin(long *size) {
+
+    //archvo temporal para guardar la entrada
+    FILE *tmp = tmpfile();
+    if (!tmp) {
+        fprintf(stderr, "no se pudo crear archivo temporal\n");
+        exit(1);
+    }
+
+    int c;
+    long length = 0;
+
+    //ver si hay entrada y auntualizo el tamaño + guardo en archivo temporal
+    while ((c = getchar()) != EOF) {
+        fputc(c, tmp);
+        length++;
     }
 
     if (length == 0) {
-        return NULL; // no se leyó nada
+        fclose(tmp);
+        *size = 0;
+        return NULL;
     }
+
+    // reservar memoria para el texto
+    char *buffer = malloc(length);
+    if (!buffer) {
+        fprintf(stderr, "malloc failed\n");
+        fclose(tmp);
+        exit(1);
+    }
+
+    // volver al inicio del archivo
+    rewind(tmp);
+
+    fread(buffer, 1, length, tmp);
+    fclose(tmp);
 
     *size = length;
     return buffer;
