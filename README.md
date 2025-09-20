@@ -1,3 +1,8 @@
+#Realizado por:
+Santiago Correa Castillo
+Emanuel Munera Pérez
+
+
 # reverse.c
 
 Este programa invierte el contenido de un archivo de texto.
