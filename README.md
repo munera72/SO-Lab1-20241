@@ -1,6 +1,5 @@
 # Realizado por:
-Santiago Correa Castillo
-Emanuel Munera Pérez
+Santiago Correa Castillo y Emanuel Munera Pérez
 
 
 # reverse.c
