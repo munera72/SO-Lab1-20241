@@ -19,22 +19,11 @@ El archivo `archivo_salida.txt` contendrá el contenido de `archivo_entrada.txt`
 ## Funcionamiento
 
 El programa lee el archivo de entrada, almacena su contenido en memoria y luego lo escribe en el archivo de salida en orden inverso. Si hay errores al abrir los archivos o al leer/escribir, se muestra un mensaje de error.
+## Funciones personalizadas
 
-## Funciones principales
-
-- `fopen`: Abre archivos para lectura y escritura.
-- `fclose`: Cierra los archivos abiertos.
-- `fseek`: Mueve el puntero de lectura/escritura dentro del archivo.
-- `ftell`: Obtiene la posición actual del puntero en el archivo.
-- `fread`: Lee datos del archivo de entrada.
-- `fwrite`: Escribe datos en el archivo de salida.
-- `malloc`/`free`: Reserva y libera memoria para almacenar el contenido del archivo.
-- `perror`: Muestra mensajes de error si ocurre algún problema con los archivos.
-
-## Ejemplo
-
-```bash
-./reverse ejemplo.txt invertido.txt
-```
-
-Esto crea `invertido.txt` con el contenido de `ejemplo.txt` invertido.
+- `openFile`: Abre un archivo de texto, obtiene su tamaño, reserva memoria y lee todo su contenido en un buffer.
+- `writeIntoFile`: Escribe el contenido invertido línea por línea en el archivo de salida o en la salida estándar.
+- `readAllFromStdin`: Lee toda la entrada estándar y la almacena en memoria.
+- `compareStrings`: Verifica que los nombres de los archivos de entrada y salida sean diferentes.
+  
+La solución completa se encuentra dentro de la carpeta `lab01`.
