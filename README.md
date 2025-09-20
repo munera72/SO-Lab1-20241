@@ -1,3 +1,6 @@
+# Realizado por:
+Santiago Correa Castillo y Emanuel Munera Pérez
+
 # Práctica 1 de laboratorio - Introducción al lenguaje C
 
 > ## Objetivos
